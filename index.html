@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio | Aaron Cartagena</title>
+    <style>
+        /* CSS Reset & Variables */
+        :root {
+            --bg-color: #0a0a0b; 
+            --card-bg: rgba(18, 18, 20, 0.85);
+            --topbar-bg: rgba(18, 18, 20, 0.95);
+            --text-main: #e2e2e5;
+            --text-muted: #8b8b99;
+            --accent: #ff2a2a; 
+            --border-color: #222226;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+            --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        ::selection {
+            background-color: var(--accent);
+            color: #fff;
+        }
+
+        /* Native Video Background */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+            background-color: var(--bg-color);
+        }
+
+        .bg-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 11, 0.75);
+            z-index: -1;
+        }
+
+        /* Top Header Area */
+        header {
+            background: var(--topbar-bg);
+            padding: 1.5rem 2rem;
+            z-index: 10;
+        }
+
+        .header-content {
+            border-left: 4px solid var(--accent);
+            padding-left: 1rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header-content h1 {
+            font-size: 1.5rem;
+            color: var(--text-main);
+            line-height: 1.2;
+            font-weight: 600;
+        }
+
+        .header-content p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Layout Container */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Top Tabs Bar */
+        .tab-bar {
+            width: 100%;
+            background: var(--topbar-bg);
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+            z-index: 5;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .tab-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 1rem 2rem;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 3px solid transparent;
+            font-family: var(--font-sans);
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .tab-btn.active {
+            color: var(--text-main);
+            border-bottom-color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 3rem 5%;
+            position: relative;
+        }
+
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.4s ease;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding-bottom: 4rem;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Document Viewer Modal */
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: relative;
+            margin: 2% auto;
+            width: 85%;
+            height: 88%;
+            background-color: #1a1a1c;
+            border: 1px solid var(--accent);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: var(--text-main);
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close-btn:hover {
+            color: var(--accent);
+        }
+
+        #pdfViewer {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 4px;
+        }
+
+        #imgViewer {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            margin: auto;
+        }
+
+        /* Typography & Components */
+        h2 {
+            font-size: 1.25rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+            color: var(--text-main);
+        }
+
+        p { color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem; }
+
+        .intro-text {
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin-bottom: 3rem;
+            color: var(--text-main);
+            line-height: 1.8;
+        }
+
+        /* About Section Layout */
+        .about-content { display: flex; gap: 3rem; align-items: center; }
+        .about-image { flex-shrink: 0; }
+        .about-image img { width: 200px; height: 200px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color); transition: all 0.3s ease; }
+        .about-image img:hover { filter: grayscale(0%) contrast(1); border-color: var(--accent); }
+
+        /* General Card Styles */
+        .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        .content-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 2rem; transition: border-color 0.2s ease; border-radius: 4px;}
+        .content-card:hover { border-color: var(--accent); }
+        .content-card h3 { font-size: 1.15rem; margin-bottom: 0.5rem; color: var(--text-main); font-weight: 600;}
+        .tag-container { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .tag { font-family: var(--font-mono); font-size: 0.65rem; text-transform: uppercase; padding: 0.25rem 0.5rem; border: 1px solid var(--text-muted); color: var(--text-muted); }
+
+        /* Company Profile Split Grid Layout */
+        .company-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; }
+        .company-logo { width: 85px; height: 85px; object-fit: contain; }
+        .company-logo img { width: 100%; height: 100%; object-fit: contain; }
+        .company-subtitle { font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem; display: block;}
+        
+        .profile-layout-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
+        .info-column { display: flex; flex-direction: column; gap: 1.5rem; }
+        
+        .director-card { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; }
+        .director-frame { width: 140px; height: 140px; border-radius: 4px; overflow: hidden; border: 1px solid var(--border-color); margin-bottom: 1.25rem; }
+        .director-frame img { width: 100%; height: 100%; object-fit: cover; }
+        .director-label { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 0.25rem; }
+        .director-name { font-size: 1.1rem; color: var(--text-main); font-weight: 600; line-height: 1.3; }
+
+        /* OJT Section */
+        .ojt-container h3 { font-size: 1.15rem; color: var(--text-main); margin-bottom: 0.5rem; font-weight: 500; }
+        .doc-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.75rem; list-style: none; }
+        .doc-item a { display: flex; align-items: center; padding: 1rem 1.25rem; background: var(--card-bg); border: 1px solid var(--border-color); text-decoration: none; color: var(--text-muted); font-size: 0.85rem; transition: all 0.2s ease; border-radius: 4px; cursor: pointer;}
+        .doc-item a:hover { background: var(--bg-color); border-color: var(--accent); color: var(--text-main); }
+        .doc-icon { margin-right: 1rem; font-size: 1rem; opacity: 0.7; filter: grayscale(100%); transition: opacity 0.2s ease; }
+        .doc-item a:hover .doc-icon { opacity: 1; filter: grayscale(0%); }
+        .eval-forms-container { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color); }
+        .eval-forms-title { font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 1.5rem; color: var(--accent); }
+
+        /* Contact */
+        .contact-links { margin-top: 2rem; }
+        .contact-links a { display: inline-block; margin-right: 2rem; color: var(--text-main); font-family: var(--font-mono); text-decoration: none; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; border-bottom: 1px solid transparent; padding-bottom: 2px; transition: border-color 0.2s ease, color 0.2s ease; }
+        .contact-links a:hover { color: var(--accent); border-color: var(--accent); }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body { overflow: auto; }
+            .app-container { overflow: visible; }
+            .tab-bar { justify-content: flex-start; }
+            .about-content { flex-direction: column; text-align: left; gap: 2rem; }
+            .about-image img { width: 160px; height: 160px; }
+            .company-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .profile-layout-grid { grid-template-columns: 1fr; }
+            .director-card { order: -1; }
+            .modal-content { width: 95%; margin: 10% auto; height: 80%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="video-background">
+        <video autoplay loop muted playsinline class="bg-video">
+            <source src="911 r.mp4" type="video/mp4">
+            Your browser does not support HTML5 video.
+        </video>
+    </div>
+    <div class="video-overlay"></div>
+
+    <div id="docViewerModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <iframe id="pdfViewer" src="" style="display:none;" title="PDF Viewer"></iframe>
+            <img id="imgViewer" src="" style="display:none;" alt="Image Viewer">
+        </div>
+    </div>
+
+    <header>
+        <div class="header-content">
+            <h1>Aaron Cartagena</h1>
+            <p>BS Computer Engineering | Portfolio</p>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <nav class="tab-bar">
+            <button class="tab-btn active" onclick="openTab(event, 'about-tab')">About Me</button>
+            <button class="tab-btn" onclick="openTab(event, 'company-tab')">Company Profile</button>
+            <button class="tab-btn" onclick="openTab(event, 'ojt-tab')">OJT Portfolio</button>
+            <button class="tab-btn" onclick="openTab(event, 'works-tab')">Other Works</button>
+            <button class="tab-btn" onclick="openTab(event, 'contact-tab')">Contact</button>
+        </nav>
+
+        <main class="main-content">
+            
+            <div id="about-tab" class="tab-pane active">
+                <p class="intro-text">
+                    In this website, I will be sharing with you my portfolio output of my On-the-Job Training (OJT) and other works that I have done in the past. You can also find my contact information here if you want to reach out to me for any inquiries or collaborations. 
+                </p>
+
+                <div class="about-content">
+                    <div class="about-image">
+                        <img src="1x1 pic.png" alt="Aaron Cartagena">
+                    </div>
+                    <div class="about-text">
+                        <p>
+                            Second-year computer engineering student with a foundation in software logic, system servicing, and hardware fundamentals. A results-oriented, and adventurous individual seeking a position to apply expertise in STEM-related subjects and implementing innovative solutions related but not limited to complex engineering challenges. Proven track record of success in group management, problem-solving, and cross-functional collaboration. Adept at utilizing technologies to optimize processes and enhance overall efficiency.
+                        </p>
+                        <p>
+                            Outside of engineering and coding, I have a strong secondary interest in sports such as motorsports, basketball, football, and badminton. During my free time, I like to play video games, listen to music, and watch movies and series.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="company-tab" class="tab-pane">
+                <h2>Company Profile</h2>
+                
+                <div class="content-card">
+                    <div class="company-header">
+                        <div class="company-logo">
+                            <img src="images.png" alt="DENR EMB Seal">
+                        </div>
+                        <div>
+                            <span class="company-subtitle">Department of Environment and Natural Resources</span>
+                            <h3>Environmental Management Bureau</h3>
+                            <p style="margin: 0; font-size: 0.85rem; font-family: var(--font-mono); color: var(--accent);">CENTRAL OFFICE</p>
+                        </div>
+                    </div>
+                    <p style="margin-bottom: 0;">
+                        The Environmental Management Bureau (EMB) is a national government agency tasked with formulating, integrating, and implementing environmental policies and programs. It administers and enforces national pollution control laws, managing air quality, water quality, solid waste, and toxic chemicals across the country.
+                    </p>
+                </div>
+
+                <div class="profile-layout-grid">
+                    
+                    <div class="info-column">
+                        <div class="content-card">
+                            <h3>Vision & Mandate</h3>
+                            <p style="margin-bottom: 0;">
+                                To foster a clean and healthy environment through proper waste management, pollution control, and sustainable resource allocation, driving nationwide compliance with standard ecological guidelines.
+                            </p>
+                        </div>
+                        
+                        <div class="content-card">
+                            <h3>Core Responsibilities</h3>
+                            <p style="margin-bottom: 0;">
+                                Implementation of crucial environmental mandates including the Philippine Environmental Impact Statement System, Pollution Control regulations, Toxic Substances and Hazardous Waste Management, and Eco-Waste initiatives.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="content-card director-card">
+                        <div class="director-frame">
+                            <img src="thumbnail_8-RD-Matias-R4B.jpg" alt="Atty. Michael Drake P. Matias">
+                        </div>
+                        <div>
+                            <span class="director-label">Director, EMB</span>
+                            <h4 class="director-name">Atty. Michael Drake P. Matias</h4>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="ojt-tab" class="tab-pane">
+                <h2>OJT 1 Portfolio</h2>
+                <div class="ojt-container">
+                    <h3>Documents & Requirements</h3>
+                    <p>Select any of the documents below to view the official files and reports from my OJT.</p>
+                    
+                    <ul class="doc-list">
+                        <li class="doc-item"><a onclick="openDocument(event, 'MOA_DENR-EMBxPUP.pdf', 'pdf')"><span class="doc-icon">📄</span> Memorandum of Agreement (MoA)</a></li>
+                        <li class="doc-item"><a onclick="openDocument(event, 'CARTAGENA_DENR_LOI.pdf', 'pdf')"><span class="doc-icon">📄</span> Letter of Intent (LoI)</a></li>
+                        <li class="doc-item"><a onclick="openDocument(event, 'CARTAGENA_DENR_LOE.pdf', 'pdf')"><span class="doc-icon">📄</span> Letter of Endorsement (LoE)</a></li>
+                        <li class="doc-item"><a href="#"><span class="doc-icon">📄</span> Student Waiver</a></li>
+                        <li class="doc-item"><a href="#"><span class="doc-icon">📄</span> Internship Agreement</a></li>
+                        <li class="doc-item"><a href="#"><span class="doc-icon">📄</span> Consent Form</a></li>
+                        <li class="doc-item"><a onclick="openDocument(event, 'Cartagena, Aaron Resume.pdf', 'pdf')"><span class="doc-icon">📄</span> Comprehensive Resume</a></li>
+                        <li class="doc-item"><a onclick="openDocument(event, 'Insurance - CARTAGENA.png', 'image')"><span class="doc-icon">📄</span> Insurance (Photocopy)</a></li>
+                        <li class="doc-item"><a href="#"><span class="doc-icon">📄</span> Medical Certificate</a></li>
+                        <li class="doc-item"><a href="#"><span class="doc-icon">📄</span> Daily Attendance Sheet</a></li>
+                        <li class="doc-item"><a href="#"><span class="doc-icon">📄</span> Weekly Reports</a></li>
+                        <li class="doc-item"><a href="#"><span class="doc-icon">📄</span> Experience Summary Report</a></li>
+                        <li class="doc-item"><a href="#"><span class="doc-icon">📄</span> Certificate of Completion</a></li>
+                        <li class="doc-item"><a href="#"><span class="doc-icon">📷</span> Photo Documentation</a></li>
+                    </ul>
+
+                    <div class="eval-forms-container">
+                        <div class="eval-forms-title">Evaluation Forms</div>
+                        <ul class="doc-list">
+                            <li class="doc-item"><a href="#"><span class="doc-icon">📋</span> Student Intern</a></li>
+                            <li class="doc-item"><a href="#"><span class="doc-icon">📋</span> Supervisor</a></li>
+                            <li class="doc-item"><a href="#"><span class="doc-icon">📋</span> HTE</a></li>
+                            <li class="doc-item"><a href="#"><span class="doc-icon">📋</span> OJT Adviser</a></li>
+                            <li class="doc-item"><a href="#"><span class="doc-icon">📋</span> Performance Grading</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="works-tab" class="tab-pane">
+                <h2>Other Works</h2>
+                <div class="projects-grid">
+                    
+                    <div class="content-card">
+                        <h3>Tower of Hanoi Interactive GUI</h3>
+                        <p>A desktop application featuring manual play and a recursive automated solver. Includes custom user onboarding at launch and a real-time step counter.</p>
+                        <div class="tag-container">
+                            <span class="tag">Python</span>
+                            <span class="tag">Tkinter</span>
+                            <span class="tag">Algorithms</span>
+                        </div>
+                    </div>
+
+                    <div class="content-card">
+                        <h3>Architectural Data Scheduling</h3>
+                        <p>Generated precise technical schedules for doors and windows in a drafting environment, focusing on material and dimension specifications prior to plan symbol rendering.</p>
+                        <div class="tag-container">
+                            <span class="tag">AutoCAD</span>
+                            <span class="tag">Data Structuring</span>
+                            <span class="tag">Drafting</span>
+                        </div>
+                    </div>
+
+                    <div class="content-card">
+                        <h3>Circuit Network Analysis</h3>
+                        <p>Applied advanced nodal and mesh analysis, source transformations, and Thévenin’s theorem to solve and document complex electrical networks.</p>
+                        <div class="tag-container">
+                            <span class="tag">Circuit Theory</span>
+                            <span class="tag">Hardware</span>
+                            <span class="tag">Mathematics</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div id="contact-tab" class="tab-pane">
+                <h2>Get in Touch</h2>
+                <p>I'm currently open to new opportunities, collaborations, and discussions about hardware, software, or history.</p>
+                <div class="contact-links">
+                    <a href="mailto:aaronc0714@gmail.com">Email Me</a>
+                    <a href="https://github.com/aaronc0714" target="_blank">GitHub</a>
+                    <a href="https://www.linkedin.com/in/aaron-cartagena-69970a345/" target="_blank">LinkedIn</a>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // Tab Navigation
+        function openTab(evt, tabId) {
+            const tabPanes = document.querySelectorAll('.tab-pane');
+            tabPanes.forEach(pane => {
+                pane.classList.remove('active');
+            });
+
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            tabBtns.forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            document.getElementById(tabId).classList.add('active');
+            evt.currentTarget.classList.add('active');
+            
+            document.querySelector('.main-content').scrollTop = 0;
+        }
+
+        // Document Viewer Logic
+        function openDocument(evt, fileUrl, fileType) {
+            evt.preventDefault(); // Stop page from jumping
+            
+            const modal = document.getElementById('docViewerModal');
+            const pdfViewer = document.getElementById('pdfViewer');
+            const imgViewer = document.getElementById('imgViewer');
+
+            // Set source and toggle visibility based on file type
+            if (fileType === 'pdf') {
+                pdfViewer.src = fileUrl;
+                pdfViewer.style.display = 'block';
+                imgViewer.style.display = 'none';
+            } else if (fileType === 'image') {
+                imgViewer.src = fileUrl;
+                imgViewer.style.display = 'block';
+                pdfViewer.style.display = 'none';
+            }
+            
+            // Show the modal overlay
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('docViewerModal');
+            const pdfViewer = document.getElementById('pdfViewer');
+            const imgViewer = document.getElementById('imgViewer');
+            
+            // Hide modal and clear sources so media stops loading/playing
+            modal.style.display = 'none';
+            pdfViewer.src = ''; 
+            imgViewer.src = ''; 
+        }
+
+        // Close modal when clicking anywhere outside of the actual document box
+        window.onclick = function(event) {
+            const modal = document.getElementById('docViewerModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
